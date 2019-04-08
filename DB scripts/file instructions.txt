@@ -1,0 +1,13 @@
+** more details to be added.
+
+The python scripts found in this directory are to be utilized for creating a usable valid database for the recommendation system.
+
+
+
+The database movie list can be sourced from: https://www.imdb.com/interfaces/
+
+The following to commands must be ran to convert the tsv files to usable sql files for queries:-
+
+python TSVtoMySQL.py -tf data(akas).tsv -tn titles -cl vc(64) nn, int(32) nn, vc(256) nn, vc(128) nn, vc(32) nn, vc(128) nn, vc(64) nn, int(8) nn -of COMP3901 -db moviesDB
+
+python TSVtoMySQL.py -tf data(basics).tsv -tn titleDetails -cl vc(64) nn, vc(32) nn, vc(128) nn, vc(256) nn, int(8) nn, vc(16) nn, vc(16) nn, int(16) nn, vc(64) nn -of COMP3901 -db moviesDB

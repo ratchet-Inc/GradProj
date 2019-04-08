@@ -1,2 +1,2 @@
-# GradProj
-Database setup scripts for a recommendation system
+# GradProj (COMP3901)
+Repository for movie recommendations subsystem
