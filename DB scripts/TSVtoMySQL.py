@@ -15,6 +15,7 @@ def CreateTableQuery(data, params):
         params['-cl'][index] = params['-cl'][index].replace('nn', 'NOT NULL')
         params['-cl'][index] = params['-cl'][index].replace('un', 'unique')
         params['-cl'][index] = params['-cl'][index].replace('pk', 'primary key')
+        params['-cl'][index] = params['-cl'][index].replace('fk', 'foreign key')
         query += data[index].lower() + '_ ' + params['-cl'][index].strip()
         if index < (len(data) - 1):
             query += ',\n'
@@ -66,6 +67,11 @@ def mainFunc(params):
         return -1
     fn = params['-of'].strip()+"("+params['-tn'].strip()+")"
     outF = open("./"+fn+".sql", "wb+")
+    if params['-ndb'].lower() == 'true':
+        print("drop previous DB found!")
+        s = "DROP TABLE IF EXISTS " + params['-db'].strip() + ";\n"
+        outF.write(s.encode('utf-8'))
+        pass
     s = "USE " + params['-db'].strip() + ";\n"
     outF.write(s.encode('utf-8'))
     data = ReadData(tfPtr)
