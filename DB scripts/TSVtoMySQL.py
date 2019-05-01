@@ -35,7 +35,7 @@ def CreateInsertQuery(tableData, entryData, params):
     q += ') values('
     for i in range(len(entryData)):
         if 'varchar' in params['-cl'][i]:
-            q += '"'+entryData[i].replace('"', '\"')+'"'
+            q += '"'+entryData[i].replace('"', '\\"')+'"'
         else:
             q += entryData[i]
         if i != (len(entryData) - 1):
@@ -71,6 +71,8 @@ def mainFunc(params):
         print("drop previous DB found!")
         s = "DROP DATABASE IF EXISTS " + params['-db'].strip() + ";\n"
         outF.write(s.encode('utf-8'))
+        s = "CREATE DATABASE " + params['-db'].strip() + ";\n"
+        outF.write(s.encode('utf-8'))
         pass
     s = "USE " + params['-db'].strip() + ";\n"
     outF.write(s.encode('utf-8'))
@@ -85,6 +87,9 @@ def mainFunc(params):
     print("Line read[0]: %s" % (lineData))
     print("Translating file...")
     start = time.time()
+    #entryData = CreateInsertQuery(data, lineData, params)
+    #print("Query:-\n\n%s" % entryData)
+    #return -1
     while len(lineData) > 1:
         entryData = CreateInsertQuery(data, lineData, params)
         #print("Query:-\n\n%s" % entryData)
@@ -92,7 +97,7 @@ def mainFunc(params):
         lineData = ReadData(tfPtr)
         pass
     end = time.time()
-    print("Translationg completed in %d seconds. file saved as: './%s'\n\n" % ( end - start, fn))
+    print("Translating completed in %d seconds. file saved as: './%s'\n\n" % ( end - start, fn))
     tfPtr.close()
     outF.close()
     return 0
