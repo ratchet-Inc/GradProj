@@ -35,7 +35,7 @@ def CreateInsertQuery(tableData, entryData, params):
     q += ') values('
     for i in range(len(entryData)):
         if 'varchar' in params['-cl'][i]:
-            q += '"'+entryData[i]+'"'
+            q += '"'+entryData[i].replace('"', '\"')+'"'
         else:
             q += entryData[i]
         if i != (len(entryData) - 1):
@@ -67,12 +67,14 @@ def mainFunc(params):
         return -1
     fn = params['-of'].strip()+"("+params['-tn'].strip()+")"
     outF = open("./"+fn+".sql", "wb+")
-    if params['-ndb'].lower() == 'true':
+    if params['-ndb'].strip() == 'true':
         print("drop previous DB found!")
-        s = "DROP TABLE IF EXISTS " + params['-db'].strip() + ";\n"
+        s = "DROP DATABASE IF EXISTS " + params['-db'].strip() + ";\n"
         outF.write(s.encode('utf-8'))
         pass
     s = "USE " + params['-db'].strip() + ";\n"
+    outF.write(s.encode('utf-8'))
+    s = "DROP TABLE IF EXISTS " + params['-tn'].strip() + ";\n"
     outF.write(s.encode('utf-8'))
     data = ReadData(tfPtr)
     print("filtered line[0]: %s\n" % data)
