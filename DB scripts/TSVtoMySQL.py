@@ -3,7 +3,8 @@ import time
 
 def CreateTableQuery(data, params):
     if not params.get('-cl'):
-        return '**ERROR: Table column data not set.'
+        print('**ERROR: Table column data not set.')
+        return -1   
     params['-cl'] = params['-cl'].split(',')
     if len(data) != len(params['-cl']):
         print("**ERROR: table definition length is invalid.")
@@ -87,13 +88,46 @@ def mainFunc(params):
     print("Line read[0]: %s" % (lineData))
     print("Translating file...")
     start = time.time()
-    #entryData = CreateInsertQuery(data, lineData, params)
-    #print("Query:-\n\n%s" % entryData)
+    entryData = CreateInsertQuery(data, lineData, params)
+    print("Query:-\n\n%s" % entryData)
+    #print("filters(unparsed):", params.get('-flt'))
+    params['-flt'] = params['-flt'].strip().split(',')
+    print("filters(parsed):", params.get('-flt'))
     #return -1
+    refPtr = None
+    if params['-flt'][0] == 'false' and params['-flt'][1] != 'none':
+        refPtr = open(params['-flt'][1], 'rb')
+        pass
     while len(lineData) > 1:
         entryData = CreateInsertQuery(data, lineData, params)
+        if entryData == -1 or entryData == '':
+            return -1
         #print("Query:-\n\n%s" % entryData)
-        outF.write(entryData.encode('utf-8'))
+        if params['-flt'][0] == 'false' and params['-flt'][1] == 'none':
+            #print("no filtering")
+            outF.write(entryData.encode('utf-8'))
+            pass
+        elif params['-flt'][0].strip() == 'true' and lineData[1] in params['-flt'][1].strip():
+            #print("filtering")
+            outF.write(entryData.encode('utf-8'))
+            pass
+        elif params['-flt'][0] == 'false':
+            #print("semi filtering")
+            if refPtr == None:
+                print("*ERROR: Failed to open filter reference file.")
+                return -1
+            sLine = ReadData(refPtr)
+            while len(sLine) > 1:
+                if sLine[0] == entryData[0]:
+                    outF.write(entryData.encode('utf-8'))
+                    pass
+                sLine = ReadData(refPtr)
+                pass
+            refPtr.seek(0)
+            pass
+        else:
+            #print("unknown filtering: %s and %s" % (params['-flt'][1], lineData[1]))
+            pass
         lineData = ReadData(tfPtr)
         pass
     end = time.time()
