@@ -133,14 +133,14 @@ def mainFunc(params):
             sLine = FilterRead(refPtr)
             while len(sLine) > 1:
                 temp = sLine.decode().strip().split(',')
-                print("comparing: %s and %s" % (sLine, lineData[0].strip()))
+                #print("comparing: %s and %s" % (sLine, lineData[0].strip()))
                 temp[0] = temp[0].replace("'", '')
                 if temp[0].strip() == lineData[0].strip().replace("'", ''):
-                    print("matched")
+                    #print("matched")
                     outF.write(entryData.encode('utf-8'))
                     break
                 elif FilterKey(temp) > FilterKey(lineData):
-                    print("stopping search")
+                    #print("stopping search")
                     break
                 sLine = FilterRead(refPtr)
                 pass
