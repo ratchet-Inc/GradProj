@@ -1,22 +1,30 @@
 import sys
 import time
 
+def FilterKey(arr):
+    k = arr[0].replace('tt', '0')
+    return int(k)
+
 def CreateTableQuery(data, params):
     if not params.get('-cl'):
         print('**ERROR: Table column data not set.')
         return -1   
     params['-cl'] = params['-cl'].split(',')
     if len(data) != len(params['-cl']):
-        print("**ERROR: table definition length is invalid.")
+        print("**ERROR: table columns definition length is invalid.")
         return ''
-    #print('cl data:', params['-cl'])
+    #print('param data:', params['-cl'])
+    #print('table data:', data)
     query = 'CREATE TABLE ' + params['-tn'].lower() + '(\n'
     for index in range(len(data)):
         params['-cl'][index] = params['-cl'][index].replace('vc', 'varchar')
         params['-cl'][index] = params['-cl'][index].replace('nn', 'NOT NULL')
         params['-cl'][index] = params['-cl'][index].replace('un', 'unique')
         params['-cl'][index] = params['-cl'][index].replace('pk', 'primary key')
-        params['-cl'][index] = params['-cl'][index].replace('fk', 'foreign key')
+        params['-cl'][index] = params['-cl'][index].replace('fk', 'REFERENCES')
+        if "references" in params['-cl'][index].lower():
+            params['-cl'][index] += ' ' + params['-flt'][2].strip() + '(' + params['-flt'][3].strip() + ')'
+            pass
         query += data[index].lower() + '_ ' + params['-cl'][index].strip()
         if index < (len(data) - 1):
             query += ',\n'
@@ -79,6 +87,9 @@ def mainFunc(params):
     outF.write(s.encode('utf-8'))
     s = "DROP TABLE IF EXISTS " + params['-tn'].strip() + ";\n"
     outF.write(s.encode('utf-8'))
+    #print("filters(unparsed):", params.get('-flt'))
+    params['-flt'] = params['-flt'].strip().split(',')
+    print("filters(parsed):", params.get('-flt'))
     data = ReadData(tfPtr)
     print("filtered line[0]: %s\n" % data)
     tableInfo = CreateTableQuery(data, params)
@@ -90,13 +101,11 @@ def mainFunc(params):
     start = time.time()
     entryData = CreateInsertQuery(data, lineData, params)
     print("Query:-\n\n%s" % entryData)
-    #print("filters(unparsed):", params.get('-flt'))
-    params['-flt'] = params['-flt'].strip().split(',')
-    print("filters(parsed):", params.get('-flt'))
     #return -1
     refPtr = None
+    filterBuffer = []
     if params['-flt'][0] == 'false' and params['-flt'][1] != 'none':
-        refPtr = open(params['-flt'][1], 'rb')
+        refPtr = open('./'+params['-flt'][1].strip(), 'rb')
         pass
     while len(lineData) > 1:
         entryData = CreateInsertQuery(data, lineData, params)
@@ -107,9 +116,10 @@ def mainFunc(params):
             #print("no filtering")
             outF.write(entryData.encode('utf-8'))
             pass
-        elif params['-flt'][0].strip() == 'true' and lineData[1] in params['-flt'][1].strip():
+        elif params['-flt'][0].strip() == 'true' and params['-flt'][1].strip() in lineData[1]:
             #print("filtering")
             outF.write(entryData.encode('utf-8'))
+            filterBuffer.append(lineData)
             pass
         elif params['-flt'][0] == 'false':
             #print("semi filtering")
@@ -118,9 +128,11 @@ def mainFunc(params):
                 return -1
             sLine = ReadData(refPtr)
             while len(sLine) > 1:
-                if sLine[0] == entryData[0]:
+                #print("comparing: %s and %s" % (sLine[0].strip(), lineData[0].strip()))
+                if sLine[0].strip() == lineData[0].strip():
+                    #print("matched")
                     outF.write(entryData.encode('utf-8'))
-                    pass
+                    break
                 sLine = ReadData(refPtr)
                 pass
             refPtr.seek(0)
@@ -132,6 +144,18 @@ def mainFunc(params):
         pass
     end = time.time()
     print("Translating completed in %d seconds. file saved as: './%s'\n\n" % ( end - start, fn))
+    if filterBuffer != []:
+        print("**Starting filtering of file..")
+        start - time.time()
+        filterBuffer.sort(key = FilterKey)
+        filterPtr = open('filtered(' + params['-tn'] + ').txt', 'wb')
+        for i in filterBuffer:
+            filterPtr.write(i)
+            pass
+        end = time.time()
+        print("Filtering and ordering of file complete. Time taken: %d" % (end - start))
+        pass
+    print("\n\n**Executed completed succesfully.")
     tfPtr.close()
     outF.close()
     return 0
