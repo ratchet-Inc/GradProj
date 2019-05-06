@@ -65,6 +65,10 @@ def ReadData(filePointer):
         pass
     return l
 
+def FilterRead(ptr):
+    line = ptr.readline()
+    return line
+
 def mainFunc(params):
     if not params.get('-tf') or not params.get('-of'):
         print("Target file or output file not set.")
@@ -126,16 +130,22 @@ def mainFunc(params):
             if refPtr == None:
                 print("*ERROR: Failed to open filter reference file.")
                 return -1
-            sLine = ReadData(refPtr)
+            sLine = FilterRead(refPtr)
             while len(sLine) > 1:
-                #print("comparing: %s and %s" % (sLine[0].strip(), lineData[0].strip()))
-                if sLine[0].strip() == lineData[0].strip():
-                    #print("matched")
+                temp = sLine.decode().strip().split(',')
+                print("comparing: %s and %s" % (sLine, lineData[0].strip()))
+                temp[0] = temp[0].replace("'", '')
+                if temp[0].strip() == lineData[0].strip().replace("'", ''):
+                    print("matched")
                     outF.write(entryData.encode('utf-8'))
                     break
-                sLine = ReadData(refPtr)
+                elif FilterKey(temp) > FilterKey(lineData):
+                    print("stopping search")
+                    break
+                sLine = FilterRead(refPtr)
                 pass
-            refPtr.seek(0)
+            #refPtr.seek(0)
+            refPtr.seek(len(sLine) * -1, 1)
             pass
         else:
             #print("unknown filtering: %s and %s" % (params['-flt'][1], lineData[1]))
@@ -150,10 +160,12 @@ def mainFunc(params):
         filterBuffer.sort(key = FilterKey)
         filterPtr = open('filtered(' + params['-tn'] + ').txt', 'wb')
         for i in filterBuffer:
-            filterPtr.write(i)
+            s = str(i)[1:len(str(i)) - 2] + '\n'
+            filterPtr.write(s.encode('utf-8'))
             pass
         end = time.time()
         print("Filtering and ordering of file complete. Time taken: %d" % (end - start))
+        filterPtr.close()
         pass
     print("\n\n**Executed completed succesfully.")
     tfPtr.close()
