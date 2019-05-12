@@ -108,7 +108,7 @@ def mainFunc(params):
     #return -1
     refPtr = None
     filterBuffer = []
-    if params['-flt'][0] == 'false' and params['-flt'][1] != 'none':
+    if params['-flt'][0] == 'false' and params['-flt'][1].strip() != 'none':
         refPtr = open('./'+params['-flt'][1].strip(), 'rb')
         pass
     while len(lineData) > 1:
@@ -116,7 +116,7 @@ def mainFunc(params):
         if entryData == -1 or entryData == '':
             return -1
         #print("Query:-\n\n%s" % entryData)
-        if params['-flt'][0] == 'false' and params['-flt'][1] == 'none':
+        if params['-flt'][0] == 'false' and params['-flt'][1].strip() == 'none':
             #print("no filtering")
             outF.write(entryData.encode('utf-8'))
             pass
