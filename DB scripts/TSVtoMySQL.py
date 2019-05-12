@@ -1,8 +1,16 @@
 import sys
 import time
 
+FilterKeyIndex = 0
+
 def FilterKey(arr):
-    k = arr[0].replace('tt', '0')
+    k = arr[FilterKeyIndex].replace('tt', '0')
+    k = arr[FilterKeyIndex].replace('nm', '0')
+    return int(k)
+
+def FilterKey(arr, index):
+    k = arr[index].replace('tt', '0')
+    k = arr[index].replace('nm', '0')
     return int(k)
 
 def CreateTableQuery(data, params):
@@ -70,6 +78,7 @@ def FilterRead(ptr):
     return line
 
 def mainFunc(params):
+    global FilterKeyIndex
     if not params.get('-tf') or not params.get('-of'):
         print("Target file or output file not set.")
         return -1
@@ -108,24 +117,28 @@ def mainFunc(params):
     #return -1
     refPtr = None
     filterBuffer = []
-    if params['-flt'][0] == 'false' and params['-flt'][1].strip() != 'none':
+    if int(params['-flt'][0].strip()) >= 2 and params['-flt'][1].strip() != 'none':
         refPtr = open('./'+params['-flt'][1].strip(), 'rb')
+        pass
+    if params['-flt'][0] == '3' or params['-flt'][0] == '1':
+        FilterKeyIndex = int(params['-flt'][2].strip())
+        print("Filtering at index:", FilterKeyIndex)
         pass
     while len(lineData) > 1:
         entryData = CreateInsertQuery(data, lineData, params)
         if entryData == -1 or entryData == '':
             return -1
         #print("Query:-\n\n%s" % entryData)
-        if params['-flt'][0] == 'false' and params['-flt'][1].strip() == 'none':
+        if params['-flt'][0].strip() == '0':
             #print("no filtering")
             outF.write(entryData.encode('utf-8'))
             pass
-        elif params['-flt'][0].strip() == 'true' and params['-flt'][1].strip() in lineData[1]:
+        elif params['-flt'][0].strip() == '1' and params['-flt'][1].strip() in lineData[FilterKeyIndex]:
             #print("filtering")
             outF.write(entryData.encode('utf-8'))
             filterBuffer.append(lineData)
             pass
-        elif params['-flt'][0] == 'false':
+        elif int(params['-flt'][0].strip()) >= 2:
             #print("semi filtering")
             if refPtr == None:
                 print("*ERROR: Failed to open filter reference file.")
@@ -134,12 +147,17 @@ def mainFunc(params):
             while len(sLine) > 1:
                 temp = sLine.decode().strip().split(',')
                 #print("comparing: %s and %s" % (sLine, lineData[0].strip()))
-                temp[0] = temp[0].replace("'", '')
-                if temp[0].strip() == lineData[0].strip().replace("'", ''):
+                index1 = int(params['-flt'][4].strip())
+                index2 = int(params['-flt'][5].strip())
+                temp[index1] = temp[index1].replace("'", '')
+                if temp[index1].strip() == lineData[index2].strip().replace("'", ''):
                     #print("matched")
                     outF.write(entryData.encode('utf-8'))
+                    if params['-flt'][0].strip() == '3':
+                        filterBuffer.append(lineData)
+                        pass
                     break
-                elif FilterKey(temp) > FilterKey(lineData):
+                elif FilterKey(temp, index1) > FilterKey(lineData, index2):
                     #print("stopping search")
                     break
                 sLine = FilterRead(refPtr)
@@ -148,7 +166,7 @@ def mainFunc(params):
             refPtr.seek(len(sLine) * -1, 1)
             pass
         else:
-            #print("unknown filtering: %s and %s" % (params['-flt'][1], lineData[1]))
+            #print("unknown filtering: %s and %s" % (params['-flt'][1], lineData[FilterKeyIndex]))
             pass
         lineData = ReadData(tfPtr)
         pass
