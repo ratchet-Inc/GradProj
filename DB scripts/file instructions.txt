@@ -15,13 +15,10 @@ The following to commands must be ran to convert the tsv files to usable sql fil
 Generic command line format:
 python TSVtoMySQL.py -tf data(akas).tsv -tn titleDetails -cl vc(64) nn fk, int(32) nn, vc(384) nn, vc(128) nn, vc(32) nn, vc(128) nn, vc(64) nn, int(8) nn -of COMP3901 -db moviesDB -ndb false -flt false, <refFileName>, <refTable>, <refColumn>
 
-
 Specific formart for execution:
-python TSVtoMySQL.py -tf data(basics).tsv -tn titles -cl vc(128) nn pk, vc(64) nn, vc(512) nn, vc(512) nn, int(16) nn, vc(32) nn, vc(32) nn, int(32) nn, vc(128) nn -of COMP3901 -db moviesDB -ndb true -flt 1, movie, 1
-
+python TSVtoMySQL.py -tf data(basics).tsv -tn titles -cl vc(128) nn pk, vc(64) nn, vc(512) nn, vc(512) nn, int(16) nn, vc(32) nn, vc(32) nn, int(32) nn, vc(128) nn -of COMP3901 -db moviesDB -ndb true -flt 1, movie, 0, 1
+python TSVtoMySQL.py -tf data(principal).tsv -tn principals -cl vc(128) nn pk, int(8) nn, vc(128) nn, vc(256) nn, vc(256) nn, vc(256) nn -of COMP3901 -db moviesDB -ndb false -flt 3, filtered(titles).txt, 2, 0, 0
 python TSVtoMySQL.py -tf data(akas).tsv -tn titleDetails -cl vc(64) nn fk, int(32) nn, vc(384) nn, vc(128) nn, vc(32) nn, vc(128) nn, vc(64) nn, int(8) nn -of COMP3901 -db moviesDB -ndb false -flt false, <refFileName>, <refTable>, <refColumn>
-
-python TSVtoMySQL.py -tf data(names).tsv -tn crewNames -cl vc(16) nn pk, vc(64) nn, int(8) nn, int(8) nn, vc(256) nn, vc(1024) -of COMP3901 -db moviesDB -ndb false -flt false, none
 
 
 Following the queries abow, it is time ti insert into the databse via the scripts.

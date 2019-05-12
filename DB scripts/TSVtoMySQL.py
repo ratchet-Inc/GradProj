@@ -5,12 +5,12 @@ FilterKeyIndex = 0
 
 def FilterKey(arr):
     k = arr[FilterKeyIndex].replace('tt', '0')
-    k = arr[FilterKeyIndex].replace('nm', '0')
+    k = k.replace('nm', '0')
     return int(k)
 
-def FilterKey(arr, index):
+def FilterKey2(arr, index):
     k = arr[index].replace('tt', '0')
-    k = arr[index].replace('nm', '0')
+    k = k.replace('nm', '0')
     return int(k)
 
 def CreateTableQuery(data, params):
@@ -133,7 +133,7 @@ def mainFunc(params):
             #print("no filtering")
             outF.write(entryData.encode('utf-8'))
             pass
-        elif params['-flt'][0].strip() == '1' and params['-flt'][1].strip() in lineData[FilterKeyIndex]:
+        elif params['-flt'][0].strip() == '1' and params['-flt'][1].strip() in lineData[int(params['-flt'][3].strip())]:
             #print("filtering")
             outF.write(entryData.encode('utf-8'))
             filterBuffer.append(lineData)
@@ -147,8 +147,8 @@ def mainFunc(params):
             while len(sLine) > 1:
                 temp = sLine.decode().strip().split(',')
                 #print("comparing: %s and %s" % (sLine, lineData[0].strip()))
-                index1 = int(params['-flt'][4].strip())
-                index2 = int(params['-flt'][5].strip())
+                index1 = int(params['-flt'][3].strip())
+                index2 = int(params['-flt'][4].strip())
                 temp[index1] = temp[index1].replace("'", '')
                 if temp[index1].strip() == lineData[index2].strip().replace("'", ''):
                     #print("matched")
@@ -157,7 +157,8 @@ def mainFunc(params):
                         filterBuffer.append(lineData)
                         pass
                     break
-                elif FilterKey(temp, index1) > FilterKey(lineData, index2):
+                elif FilterKey2(temp, index1) > FilterKey2(lineData, index2):
+                    #print("comparing: %s and %s" % (temp[index1], lineData[index2].strip()))
                     #print("stopping search")
                     break
                 sLine = FilterRead(refPtr)
@@ -171,12 +172,12 @@ def mainFunc(params):
         lineData = ReadData(tfPtr)
         pass
     end = time.time()
-    print("Translating completed in %d seconds. file saved as: './%s'\n\n" % ( end - start, fn))
+    print("Translating completed in %d seconds. file saved as: './%s.sql'\n\n" % ( end - start, fn))
     if filterBuffer != []:
         print("**Starting filtering of file..")
-        start - time.time()
+        start = time.time()
         filterBuffer.sort(key = FilterKey)
-        filterPtr = open('filtered(' + params['-tn'] + ').txt', 'wb')
+        filterPtr = open('filtered(' + params['-tn'].strip() + ').txt', 'wb')
         for i in filterBuffer:
             s = str(i)[1:len(str(i)) - 2] + '\n'
             filterPtr.write(s.encode('utf-8'))
