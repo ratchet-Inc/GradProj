@@ -19,19 +19,20 @@ def CreateTableQuery(data, params):
         return -1   
     params['-cl'] = params['-cl'].split(',')
     if len(data) != len(params['-cl']):
-        print("**ERROR: table columns definition length is invalid.")
-        return ''
+        print("**ERROR: table columns definition length is invalid: %s != %s" % (len(data), len(params['-cl'])))
+        return -1
     #print('param data:', params['-cl'])
     #print('table data:', data)
     query = 'CREATE TABLE ' + params['-tn'].lower() + '(\n'
     for index in range(len(data)):
+        params['-cl'][index] = params['-cl'][index].replace('.', ',')
         params['-cl'][index] = params['-cl'][index].replace('vc', 'varchar')
         params['-cl'][index] = params['-cl'][index].replace('nn', 'NOT NULL')
         params['-cl'][index] = params['-cl'][index].replace('un', 'unique')
         params['-cl'][index] = params['-cl'][index].replace('pk', 'primary key')
         params['-cl'][index] = params['-cl'][index].replace('fk', 'REFERENCES')
         if "references" in params['-cl'][index].lower():
-            params['-cl'][index] += ' ' + params['-flt'][2].strip() + '(' + params['-flt'][3].strip() + ')'
+            params['-cl'][index] += ' ' + params['-flt'][5].strip() + '(' + params['-flt'][6].strip() + ')'
             pass
         query += data[index].lower() + '_ ' + params['-cl'][index].strip()
         if index < (len(data) - 1):
@@ -52,7 +53,8 @@ def CreateInsertQuery(tableData, entryData, params):
     q += ') values('
     for i in range(len(entryData)):
         if 'varchar' in params['-cl'][i]:
-            q += '"'+entryData[i].replace('"', '\\"')+'"'
+            temp = entryData[i].replace('\"', "'")
+            q += '"' + temp.replace('"', '\\"') + '"'
         else:
             q += entryData[i]
         if i != (len(entryData) - 1):
@@ -106,6 +108,8 @@ def mainFunc(params):
     data = ReadData(tfPtr)
     print("filtered line[0]: %s\n" % data)
     tableInfo = CreateTableQuery(data, params)
+    if tableInfo == -1:
+        return -1
     print("Query:-\n\n%s" % tableInfo)
     outF.write(tableInfo.encode('utf-8'))
     lineData = ReadData(tfPtr)
@@ -124,9 +128,10 @@ def mainFunc(params):
         FilterKeyIndex = int(params['-flt'][2].strip())
         print("Filtering at index:", FilterKeyIndex)
         pass
+    endFiltering = False
     while len(lineData) > 1:
         entryData = CreateInsertQuery(data, lineData, params)
-        if entryData == -1 or entryData == '':
+        if entryData == -1:
             return -1
         #print("Query:-\n\n%s" % entryData)
         if params['-flt'][0].strip() == '0':
@@ -144,12 +149,16 @@ def mainFunc(params):
                 print("*ERROR: Failed to open filter reference file.")
                 return -1
             sLine = FilterRead(refPtr)
+            if len(sLine) <= 2:
+                print("quitting filtering due to keys being compared are greater than filter file keys")
+                endFiltering = True
+                pass
             while len(sLine) > 1:
-                temp = sLine.decode().strip().split(',')
-                #print("comparing: %s and %s" % (sLine, lineData[0].strip()))
+                temp = sLine.decode().strip().split(', ')
                 index1 = int(params['-flt'][3].strip())
                 index2 = int(params['-flt'][4].strip())
                 temp[index1] = temp[index1].replace("'", '')
+                #print("comparing: %s and %s" % (temp[index1], lineData[index2].strip()))
                 if temp[index1].strip() == lineData[index2].strip().replace("'", ''):
                     #print("matched")
                     outF.write(entryData.encode('utf-8'))
@@ -163,8 +172,9 @@ def mainFunc(params):
                     break
                 sLine = FilterRead(refPtr)
                 pass
-            #refPtr.seek(0)
             refPtr.seek(len(sLine) * -1, 1)
+            if endFiltering:
+                break
             pass
         else:
             #print("unknown filtering: %s and %s" % (params['-flt'][1], lineData[FilterKeyIndex]))
