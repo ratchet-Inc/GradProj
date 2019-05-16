@@ -3,7 +3,7 @@ import sys
 CONST_FNAME = 'first'
 CONST_LNAME = 'last'
 CONST_PASSC = 'pass123'
-CONST_GENRELIST = {'musical':3, 'documentary':10, 'animation':7, 'adventure':1, 'drama':2, 'thriller':5, 'action':0, 'romance':6, 'horror':4, 'sci-fi':9, 'comedy':8}
+CONST_GENRELIST = {'musical':4, 'documentary':11, 'animation':8, 'adventure':2, 'drama':3, 'thriller':6, 'action':1, 'romance':7, 'horror':5, 'sci-fi':10, 'comedy':9}
 
 CONST_COMEDY = ['comedy', 'short', 'game-show', 'talk-show', 'family']
 CONST_ACTION = ['action', 'crime', 'western']
@@ -24,33 +24,34 @@ def FilterRead(ptr):
 
 def CreateUserTable():
     table = "DROP TABLE IF EXISTS users_;\nCREATE TABLE users_("
-    table += "userid int(4) PRIMARY KEY, fname varchar(16) NOT NULL, lname varchar(16) NOT NULL,"
+    table += "userid int(4) auto_increment PRIMARY KEY, fname varchar(16) NOT NULL, lname varchar(16) NOT NULL,"
     table += "passcode varchar(32) NOT NULL"
-    return table + ');'
+    return table + ');\n'
 
 def CreateMainCategoriesTable():
     table = "DROP TABLE IF EXISTS mainCategories;\nCREATE TABLE mainCategories("
-    table += "user_ int(4) REFERENCES users_.userid,"
+    table += "userid int(4) primary key REFERENCES users_.userid,"
     table += "GenreRating Decimal(9,2) not null, AgeRating Decimal(9,2) not null, MainCast Decimal(9,2) not null"
-    return table + ');'
+    return table + ');\n'
 
 def CreateSubGenresTable(genres):
     tableData = "DROP TABLE IF EXISTS subGenresRatings;\nCREATE TABLE subGenresRatings("
-    for v in range(11):
-        tableData += "subgenre" + str(v) + " Decimal(9,2) not null"
-        if v != 10:
+    tableData += "userid int(2) not null primary key references users_.userid,"
+    for v in range(1, 12):
+        tableData += "subgenre" + str(v) + " Decimal(14,7) not null"
+        if v != 11:
             tableData += ", "
             pass
         pass
     tableData += ");\n"
     tableData += "DROP TABLE IF EXISTS subGenres;\nCREATE TABLE subGenres("
-    tableData += "genreid int(2) not null auto increment, genre varchar(32) not null);\n"
+    tableData += "genreid int(2) not null auto_increment primary key, genre varchar(32) not null);\n"
     for l in CONST_GENREREFLIST:
         tableData += 'insert into subGenres(genre) values('
         tableData += '"' + l[0] + '");\n'
         pass
     tableData += "DROP TABLE IF EXISTS subGenresLookup;\nCREATE TABLE subGenresLookup("
-    tableData += "genreid int(2) not null auto increment, subgenre varchar(32) not null, referenceid int(2) not null);\n"
+    tableData += "genreid int(2) not null auto_increment primary key, subgenre varchar(32) not null, referenceid int(2) not null);\n"
     for k,v in genres.items():
         #print("key: %s | value: %s\n" % (k, v))
         for i in range(len(CONST_GENREREFLIST)):
@@ -68,18 +69,25 @@ def CreateSubGenresTable(genres):
 
 def CreateAgeRatingTable():
     table = "DROP TABLE IF EXISTS ageRatings;\nCREATE TABLE ageRatings("
-    table += "ratingid int(2) not null auto increment, adultRating Decimal(9,2) not null, childRating Decimal(9,7) not null"
-    return table + ");"
+    table += "userid int(2) not null primary key REFERENCES users_.userid, adultRating Decimal(14,7) not null, childRating Decimal(14,7) not null"
+    return table + ");\n"
 
 def CreateWatchedTable():
     table = "DROP TABLE IF EXISTS watched;\nCREATE TABLE watched("
-    table += "entry int(4) not null auto increment primary key, userid int(4) not null, title varchar(64) not null, rating Decimal(4,2)"
-    return table + ");"
+    table += "entry int(4) not null auto_increment primary key, userid int(4) not null, title varchar(64) not null, rating Decimal(4,2)"
+    return table + ");\n"
 
 def CreateMainCastTable():
     table = "DROP TABLE IF EXISTS mainCast;\nCREATE TABLE mainCast("
-    table += "userid"
-    return table + ");"
+    table += "entry int(4) not null auto_increment primary key, userid int(4) not null, crewname varchar(32) not null,"
+    table += "freq int(2) not null"
+    return table + ");\n"
+
+def WriteToFile(oF, data):
+    fPtr = open(oF.strip()+'.sql', 'wb')
+    fPtr.write(data.encode('utf-8'))
+    fPtr.close()
+    pass
 
 def mainFunc(args):
     print("**User accounts faker script running...\n")
@@ -106,15 +114,26 @@ def mainFunc(args):
         pass
     print("genres:\n", genres)
     print("length: %d\n" % len(genres))
-    #res = CreateSubGenres(genres)
-    res = CreateWatchedTable()
-    print("returned:", res)
+    res = "use moviesDB;\n"
+    res += CreateUserTable()
+    res += CreateMainCategoriesTable()
+    res += CreateAgeRatingTable()
+    res += CreateSubGenresTable(genres)
+    res += CreateWatchedTable()
+    res += CreateMainCastTable()
+    WriteToFile(args['-of'], res)
+    print("Execution complete.")
     return 0
     if not args.get('-urs'):
         print('No limitation set to the amount of users. Please set the -urs flag')
         return -1
     userLimit = args['-urs']
+    lim = userLimit // 3
     for i in range(userLimit):
+        pass
+    for i in range(3):
+        for j in range(lim):
+            pass
         pass
     return 0
 
