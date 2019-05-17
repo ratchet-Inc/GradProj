@@ -1,5 +1,7 @@
 import sys
 import mysql.connector
+import numpy
+import math
 
 def CreateConnection(args):
     args['-crds'] = args['-crds'].split(',')
@@ -34,7 +36,43 @@ def LookupGenre(cur, genre):
     res = cur.fetchall()
     return res[0][2]
 
+# Creates a list of numbers for standard deviation calculation
+def CreateValueList(updated, old):
+    ratingsData = {'g':[], "c":[], 'a':[updated['ratings'][1], updated['ratings'][2]]}
+    skip = 0
+    for i in updated['genres']:
+        if skip == 0:
+            skip += 1
+            continue
+        ratingsData['g'].append(i)
+        pass
+    temp = old['cast']
+    for i in updated['cast']:
+        for j in range(len(temp)):
+            if i[0] == temp[j][0]:
+                temp[j][3] += i[1]
+                pass
+            pass
+        pass
+    for i in temp:
+        ratingsData['c'].append(i[len(i)-1])
+        pass
+    for i in updated['cast']:
+        if i[0] == -1:
+            ratingsData['c'].append(i[2])
+            pass
+        pass
+    for k in ratingsData.keys():
+        if len(ratingsData[k]) == 0:
+            ratingsData[k] = [0]
+            pass
+        pass
+
+    return ratingsData
+
+# Performs update calculations for recommendations
 def UpdatePrefs(cur, userData, movieData, rating):
+    # config for movie information
     genre = movieData['title'][0][8].split(',')
     age = movieData['title'][0][4]
     cast = movieData['crew'][0][1].split(',')
@@ -44,6 +82,8 @@ def UpdatePrefs(cur, userData, movieData, rating):
             cast.append(i[2])
             pass
         pass
+
+    # adjusting genre data
     l = []
     for g in genre:
         if '\\n' in genre:
@@ -55,29 +95,44 @@ def UpdatePrefs(cur, userData, movieData, rating):
         pass
     updated = {'genres':list(userData['genres'][0])}
     for genre in l:
-        print("genre:", genre)
         updated['genres'][genre] += rating
         pass
+
+    # adjusting age rating data
     updated.update({'ratings':list(userData['ratings'][0])})
-    if age.strip() == 0:
+    if age == 0:
         updated['ratings'][2] += rating
         pass
     else:
         updated['ratings'][1] += rating
         pass
+
+    # adjusting cast data
     updated.update({'cast':list()})
     for p in cast:
+        if  len(userData['cast']) == 0:
+            updated['cast'].append([-1, p, 1])
+            pass
         for l in userData['cast']:
             if p in l:
                 i = i.index(p)
                 updated['cast'].append[l[0], l[3] + 1]
                 pass
             else:
-                updated['cast'].append([-1, 1])
+                updated['cast'].append([-1, p, 1])
                 pass
             pass
         pass
+
+    # updating the primary recommendation category values
     updated.update({'main':list()})
+    dataDict = CreateValueList(updated, userData)
+    res = math.floor(numpy.std(dataDict['g']))
+    updated['main'].append(userData['main'][0][1] + res)
+    res = math.floor(numpy.std(dataDict['a']))
+    updated['main'].append(userData['main'][0][2] + res)
+    res = math.floor(numpy.std(dataDict['c']))
+    updated['main'].append(userData['main'][0][3] + res)
     return updated
 
 def mainF(args):
