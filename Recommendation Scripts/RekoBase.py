@@ -22,6 +22,8 @@ def GetUserProfileData(cur, userid):
     result.update({"ratings":cur.fetchall()})
     cur.execute("SELECT * FROM maincast where userid = " + userid)
     result.update({"cast":cur.fetchall()})
+    cur.execute("SELECT * FROM users_ where userid = " + userid)
+    result.update({"score":cur.fetchall()[0][7]})
     return result
 
 def GetTitleData(cur, titleid):
@@ -116,16 +118,41 @@ def CreateFilterData(movieData):
 
 def LookupGenre(cur, data):
     res = []
+    if '-1' in data:
+        return res
     for i in data:
-        q = "SELECT referenceid FROM subgenreslookup WHERE subgenre='{}'"
+        q = "SELECT referenceid FROM subgenreslookup WHERE subgenre='{}';"
         cur.execute(q.format(i.strip()))
         r = cur.fetchall()
+        if len(r) == 0:
+            continue
         res.append(r[0][0])
         pass
     return res
 
 def LookupAgeRatings(cur, data):
-    q = "SELECT ratingid FROM ratingslookup WHERE rating='{}'"
+    if data.strip() == '1':
+        return 3
+    q = "SELECT ratingid FROM ratingslookup WHERE rating='{}';"
     cur.execute(q.format(data.strip()))
     r = cur.fetchall()
     return r[0][0]
+
+def GetTotalUserScores(data):
+    g = 0
+    a = 0
+    c = 0
+    t = 0
+    for i in range(1, len(data['genres'][0])):
+        g += data['genres'][0][i]
+        pass
+    for i in range(1, len(data['ratings'][0])):
+        a += data['ratings'][0][i]
+        pass
+    for i in range(1, len(data['main'][0])):
+        t += data['main'][0][i]
+        pass
+    for i in data['cast']:
+        c += i[3]
+        pass
+    return g, a, c, t

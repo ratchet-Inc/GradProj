@@ -33,4 +33,4 @@ def main(args):
 if "__main__" == __name__:
     args = ParseArgs()
     res = main(args)
-    print(res)
+    print("\n\n*returned:", res)
