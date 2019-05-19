@@ -70,6 +70,34 @@ def CreateValueList(updated, old):
 
     return ratingsData
 
+def WriteToDB(conn, cur, data, uid):
+    query = "UPDATE maincategories SET genrerating={}, agerating={}, maincast={} where userid={};"
+    query = query.format(data['main'][0], data['main'][1], data['main'][2], uid)
+    cur.execute(query)
+    query = "UPDATE subgenresratings SET subgenre1={},subgenre2={},subgenre3={},subgenre4={},subgenre5={},subgenre6={},subgenre7={},subgenre8={},subgenre9={},subgenre10={},subgenre11={} where userid={};"
+    query = query.format(data['genres'][1],data['genres'][2],data['genres'][3],data['genres'][4],data['genres'][5],data['genres'][6],data['genres'][7],data['genres'][8],data['genres'][9],data['genres'][10],data['genres'][11],uid)
+    cur.execute(query)
+    query = "UPDATE ageratings SET adultrating={},childrating={} where userid={};"
+    query = query.format(data['ratings'][1], data['ratings'][2], uid)
+    cur.execute(query)
+    for i in data['cast']:
+        if i[0] != -1:
+            query = "UPDATE maincast SET freq={} where entry={};"
+            query = query.format(i[2], i[0])
+            pass
+        else:
+            query = "INSERT INTO maincast(userid, crewname, freq) values({}, '{}', {});"
+            query = query.format(uid, i[1], i[2])
+            pass
+        print("query:", query)
+        cur.execute(query)
+        pass
+    cur.execute(query)
+    conn.commit()
+    q = cur.rowcount
+    print("query:", q)
+    return 0
+
 # Performs update calculations for recommendations
 def UpdatePrefs(cur, userData, movieData, rating):
     # config for movie information
@@ -143,7 +171,8 @@ def mainF(args):
     tid = args['-tid'].strip()
     res2 = GetTitleData(cur, tid)
     update = UpdatePrefs(cur, res1, res2, 8)
-    print(update)
+    print("%s\n" % update)
+    WriteToDB(conn, cur, update, uid)
     return 0
 
 def ParseArgs():

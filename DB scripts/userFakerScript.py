@@ -25,20 +25,27 @@ def FilterRead(ptr):
 def CreateUserTable():
     table = "DROP TABLE IF EXISTS users_;\nCREATE TABLE users_("
     table += "userid int(4) auto_increment PRIMARY KEY, fname varchar(16) NOT NULL, lname varchar(16) NOT NULL,"
-    table += "passcode varchar(32) NOT NULL"
+    table += "passcode varchar(32) NOT NULL, uname varchar(64) UNIQUE NOT NULL,"
+    table += "profpic varchar(256), joindate DATETIME not null DEFAULT CURRENT_TIMESTAMP,"
+    table += "scorebar Decimal(14,7) not null"
     return table + ');\n'
+
+def CreateRekoTable():
+    table = "DROP TABLE IF EXISTS rekoMovies;\nCREATE TABLE rekoMovies("
+    table += "userid int(4) not null primary key, t_id varchar(1024) not null, rekoValue varchar(1024) not null"
+    return table + ");"
 
 def CreateMainCategoriesTable():
     table = "DROP TABLE IF EXISTS mainCategories;\nCREATE TABLE mainCategories("
     table += "userid int(4) primary key REFERENCES users_.userid,"
-    table += "GenreRating Decimal(9,2) not null, AgeRating Decimal(9,2) not null, MainCast Decimal(9,2) not null"
+    table += "GenreRating int(4) not null, AgeRating int(4) not null, MainCast int(4) not null"
     return table + ');\n'
 
 def CreateSubGenresTable(genres):
     tableData = "DROP TABLE IF EXISTS subGenresRatings;\nCREATE TABLE subGenresRatings("
-    tableData += "userid int(2) not null primary key references users_.userid,"
+    tableData += "userid int(4) not null primary key references users_.userid,"
     for v in range(1, 12):
-        tableData += "subgenre" + str(v) + " Decimal(14,7) not null"
+        tableData += "subgenre" + str(v) + " int(4) not null"
         if v != 11:
             tableData += ", "
             pass
@@ -68,13 +75,20 @@ def CreateSubGenresTable(genres):
     return tableData
 
 def CreateAgeRatingTable():
+    l = ['PG', 'PG-13', 'R']
     table = "DROP TABLE IF EXISTS ageRatings;\nCREATE TABLE ageRatings("
-    table += "userid int(2) not null primary key REFERENCES users_.userid, adultRating Decimal(14,7) not null, childRating Decimal(14,7) not null"
-    return table + ");\n"
+    table += "userid int(2) not null primary key REFERENCES users_.userid,"
+    table += "rating1 int(4) not null,rating2 int(4) not null,rating3 int(4) not null);\n"
+    table += "DROP TABLE IF EXISTS ratingsLookup;\nCREATE TABLE ratingsLookup("
+    table += "ratingid int(1) not null primary key auto_increment, rating varchar(16) not null);"
+    for i in l:
+        table += "insert into ratingsLookup(rating) values('" + i +"');\n"
+        pass
+    return table
 
 def CreateWatchedTable():
     table = "DROP TABLE IF EXISTS watched;\nCREATE TABLE watched("
-    table += "entry int(4) not null auto_increment primary key, userid int(4) not null, title varchar(64) not null, rating Decimal(4,2)"
+    table += "entry int(4) not null auto_increment primary key, userid int(4) not null, title varchar(64) not null, rating int(1)"
     return table + ");\n"
 
 def CreateMainCastTable():
@@ -121,6 +135,7 @@ def mainFunc(args):
     res += CreateSubGenresTable(genres)
     res += CreateWatchedTable()
     res += CreateMainCastTable()
+    res += CreateRekoTable()
     WriteToFile(args['-of'], res)
     print("Execution complete.")
     return 0

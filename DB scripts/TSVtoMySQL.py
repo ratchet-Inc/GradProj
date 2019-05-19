@@ -105,6 +105,14 @@ def mainFunc(params):
     #print("filters(unparsed):", params.get('-flt'))
     params['-flt'] = params['-flt'].strip().split(',')
     print("filters(parsed):", params.get('-flt'))
+    refPtr = None
+    if int(params['-flt'][0].strip()) >= 2 and params['-flt'][1].strip() != 'none':
+        refPtr = open('./'+params['-flt'][1].strip(), 'rb')
+        pass
+    if params['-flt'][0] == '3' or params['-flt'][0] == '1':
+        FilterKeyIndex = int(params['-flt'][2].strip())
+        print("Filtering at index:", FilterKeyIndex)
+        pass
     data = ReadData(tfPtr)
     print("filtered line[0]: %s\n" % data)
     tableInfo = CreateTableQuery(data, params)
@@ -115,20 +123,12 @@ def mainFunc(params):
     lineData = ReadData(tfPtr)
     print("Line read[0]: %s" % (lineData))
     print("Translating file...")
-    start = time.time()
     entryData = CreateInsertQuery(data, lineData, params)
     print("Query:-\n\n%s" % entryData)
     #return -1
-    refPtr = None
     filterBuffer = []
-    if int(params['-flt'][0].strip()) >= 2 and params['-flt'][1].strip() != 'none':
-        refPtr = open('./'+params['-flt'][1].strip(), 'rb')
-        pass
-    if params['-flt'][0] == '3' or params['-flt'][0] == '1':
-        FilterKeyIndex = int(params['-flt'][2].strip())
-        print("Filtering at index:", FilterKeyIndex)
-        pass
     endFiltering = False
+    start = time.time()
     while len(lineData) > 1:
         entryData = CreateInsertQuery(data, lineData, params)
         if entryData == -1:
@@ -154,7 +154,7 @@ def mainFunc(params):
                 endFiltering = True
                 pass
             while len(sLine) > 1:
-                temp = sLine.decode().strip().split(', ')
+                temp = sLine.decode().strip().split('||')
                 index1 = int(params['-flt'][3].strip())
                 index2 = int(params['-flt'][4].strip())
                 temp[index1] = temp[index1].replace("'", '')
@@ -189,7 +189,14 @@ def mainFunc(params):
         filterBuffer.sort(key = FilterKey)
         filterPtr = open('filtered(' + params['-tn'].strip() + ').txt', 'wb')
         for i in filterBuffer:
-            s = str(i)[1:len(str(i)) - 2] + '\n'
+            s = ""
+            for j in range(len(i)):
+                s += str(i[j])
+                if j != len(i) - 1:
+                    s += " || "
+                    pass
+                pass
+            s += '\n'
             filterPtr.write(s.encode('utf-8'))
             pass
         end = time.time()
