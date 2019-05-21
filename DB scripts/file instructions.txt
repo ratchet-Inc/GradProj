@@ -34,4 +34,4 @@ mysql -u root -p<password:optional> < <filePath>/<fileName>(<fileName>).sql --si
 ** Important note: scripts take awhile to run, a long time
 
 
-python userFakerScript.py -tf filtered(titles).txt, 8 -of <filename>
+python userFakerScript.py -tf filtered(titles).txt, 8 -of <filename> -usrs 10000

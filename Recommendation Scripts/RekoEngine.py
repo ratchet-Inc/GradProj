@@ -110,8 +110,29 @@ def ContentFilteringScore(dbuser, dbpass, uid):
         scores.append({'m':totalScore, 'g':gscore, 'a':ascore, 'c':cscore, 't':m})
         pass
     # sorting and choosing the top 10 to recommend
-    scores.sort(key = FilterKey, reversed = True)
+    scores.sort(key = FilterKey, reverse = True)
     rekos = scores[0:10]
     print(rekos)
     RekoBase.CloseDatabase(conn)
+    return 0
+
+def CollaborativeSimple(dbuser, dbpass, uid):
+    conn, cur = RekoBase.ConnectToDatabase(dbuser, dbpass)
+    userData = RekoBase.GetUserProfileData(cur, uid)
+    users = RekoBase.GetUsersForCF(cur, userData)
+    table, movies = RekoBase.GenerateCF_Table(cur, users)
+    scores = [[0,-1]] * len(movies)
+    for m in range(len(movies)):
+        for u in range(len(users)):
+            scores[m] = [scores[m][0] + table[u][m], m]
+            pass
+        pass
+    #print(scores)
+    scores.sort(reverse = True)
+    scoreL = []
+    for s in scores:
+        scoreL.append({'m':s, 't':movies[m]})
+        pass
+    rekos = scoreL[0:10]
+    print(rekos)
     return 0
