@@ -15,24 +15,25 @@ def CloseDatabase(conn):
 
 def GetUserProfileData(cur, userid):
     result = {}
-    cur.execute("SELECT * FROM maincategories where userid = " + userid)
+    cur.execute("SELECT * FROM maincategories where userid = " + str(userid))
     result.update({"main":cur.fetchall()})
-    cur.execute("SELECT * FROM subgenresratings where userid = " + userid)
+    cur.execute("SELECT * FROM subgenresratings where userid = " + str(userid))
     result.update({"genres":cur.fetchall()})
-    cur.execute("SELECT * FROM ageratings where userid = " + userid)
+    cur.execute("SELECT * FROM ageratings where userid = " + str(userid))
     result.update({"ratings":cur.fetchall()})
-    cur.execute("SELECT * FROM maincast where userid = " + userid)
+    cur.execute("SELECT * FROM maincast where userid = " + str(userid))
     result.update({"cast":cur.fetchall()})
-    cur.execute("SELECT * FROM users_ where userid = " + userid)
-    result.update({"score":cur.fetchall()[0][7]})
+    cur.execute("SELECT scoresum, scoredenom FROM users_ where userid = " + str(userid))
+    result.update({"score":cur.fetchall()[0]})
     return result
 
 def GetTitleData(cur, titleid):
     result = {}
     cur.execute("select * from titles where tconst_ = '" + titleid + "';")
     result.update({"title":cur.fetchall()})
-    cur.execute("select * from principals where tconst_ = '" + titleid + "';")
-    result.update({"principals":cur.fetchall()})
+    #cur.execute("select * from principals where tconst_ = '" + titleid + "';")
+    #result.update({"principals":cur.fetchall()})
+    result.update({"principals":[]})
     cur.execute("select * from titlecrew where tconst_ = '" + titleid + "';")
     result.update({"crew":cur.fetchall()})
     return result
@@ -75,7 +76,7 @@ def GetTitlesForCF(cur, years):
     for year in tres:
         found.append([])
         for i in range(10):
-            x = random.randint(0, len(year))
+            x = random.randint(0, len(year)-1)
             if x not in found[c]:
                 found[c].append(x)
                 pass
@@ -85,6 +86,7 @@ def GetTitlesForCF(cur, years):
     res = []
     for j in range(len(found)):
         for t in found[j]:
+            #print("[%s][%s]" % (j, t))
             res.append(tres[j][t][0].strip())
             pass
         pass
@@ -158,15 +160,44 @@ def GetTotalUserScores(data):
         pass
     return g, a, c, t
 
-def GetUserRecentWatchedList(cur, uid):
-    q = "SELECT * FROM watched WHERE userid={} ORDER BY entry DESC LIMIT 10;"
-    q = q.format(uid)
+def GetUserRecentWatchedList(cur, uid, lim):
+    q = "SELECT * FROM watched WHERE userid={} ORDER BY entry DESC LIMIT {};"
+    q = q.format(uid, lim)
     cur.execute(q)
     r = cur.fetchall()
     return r
 
-def FilterID_Key(tuple):
-    return tuple[0]
+def FilterID_Key(users, baseScore):
+    for i in range(len(users)-1):
+        for j in range(i+1, len(users)):
+            s1 = users[i][1]+users[i][2]
+            diff1 = baseScore - s1
+            diff1 = diff1 * diff1
+            s2 = users[j][1]+users[j][2]
+            diff2 = baseScore - s2
+            diff2 = diff2 * diff2
+            if diff1 < diff2:
+                users[j], users[i] = users[i], users[j]
+                pass
+            pass
+        pass
+    return users
+
+def FilterID_Key2(users, baseScore):
+    for i in range(len(users)-1):
+        for j in range(i+1, len(users)):
+            s1 = users[i][1]
+            diff1 = baseScore - s1
+            diff1 = diff1 * diff1
+            s2 = users[j][1]
+            diff2 = baseScore - s2
+            diff2 = diff2 * diff2
+            if diff1 < diff2:
+                users[j], users[i] = users[i], users[j]
+                pass
+            pass
+        pass
+    return users
 
 def GetUsersForCF(cur, userData):
     bestg = [-1, 0]
@@ -181,25 +212,28 @@ def GetUsersForCF(cur, userData):
             besta = [i, userData['ratings'][0][i]]
             pass
         pass
-    diff1 = math.ceil((bestg[1]/100) * 25)
-    diff2 = math.ceil((besta[1]/100) * 25)
-    q = "SELECT userid, {} FROM subgenresratings WHERE {} >= {} AND {} <= {} LIMIT 0,10;"
-    q = q.format("subgenre"+str(bestg[0]), "subgenre"+str(bestg[0]), bestg[1]-diff1, "subgenre"+str(bestg[0]), bestg[1]+diff1)
+    diff1 = math.ceil((bestg[1]/100) * 12.5)
+    diff2 = math.ceil((besta[1]/100) * 12.5)
+    offset = random.randint(0, 989)
+    q = "SELECT userid, {} FROM subgenresratings WHERE {} >= {} AND {} <= {} LIMIT {},10;"
+    q = q.format("subgenre"+str(bestg[0]), "subgenre"+str(bestg[0]), bestg[1]-diff1, "subgenre"+str(bestg[0]), bestg[1]+diff1, offset)
     #print(q)
     cur.execute(q)
     res1 = cur.fetchall()
-    res1.sort(key = FilterID_Key, reverse = True)
+    #res1.sort(key = FilterID_Key, reverse = True)
+    res1 = FilterID_Key2(res1, bestg[1])
     #print(res1)
-    q = "SELECT userid, {} FROM ageratings WHERE {} >= {} AND {} <= {} LIMIT 0,10;"
-    q = q.format("rating"+str(besta[0]), "rating"+str(besta[0]), besta[1]-diff2, "rating"+str(besta[0]), besta[1]+diff2)
+    q = "SELECT userid, {} FROM ageratings WHERE {} >= {} AND {} <= {} LIMIT {},10;"
+    q = q.format("rating"+str(besta[0]), "rating"+str(besta[0]), besta[1]-diff2, "rating"+str(besta[0]), besta[1]+diff2, offset)
     #print(q)
     cur.execute(q)
     res2 = cur.fetchall()
-    res2.sort(key = FilterID_Key, reverse = True)
+    #res2.sort(key = FilterID_Key, reverse = True)
+    res2 = FilterID_Key2(res2, besta[1])
     #print(res2)
     res = []
     for i in range(len(res1)):
-        if len(res) % 5 == 0:
+        if len(res) != 0 and len(res) % 5 == 0:
             break
         if res1[i][0] not in res:
             res.append(res1[i][0])
@@ -214,10 +248,10 @@ def GetUsersForCF(cur, userData):
         pass
     return res
 
-def GenerateCF_Table(cur, users):
+def GenerateCF_Table(cur, users, lim=10):
     watchedData = {}
     for i in range(len(users)):
-        movies = GetUserRecentWatchedList(cur, users[i])
+        movies = GetUserRecentWatchedList(cur, users[i], lim)
         watchedData.update({users[i]:movies})
         pass
     uniqMovies = []
@@ -244,3 +278,100 @@ def GenerateCF_Table(cur, users):
 
 def CF_FilterKey(data):
     return data[0]
+
+def MF_FilterKey1(data):
+    return data[0]
+
+def CFUserSort(users, base):
+    baseScore = base
+    for i in range(len(users)-1):
+        for j in range(i+1, len(users)):
+            s1 = users[i][1]+users[i][2]
+            diff1 = baseScore - s1
+            diff1 = diff1 * diff1
+            s2 = users[j][1]+users[j][2]
+            diff2 = baseScore - s2
+            diff2 = diff2 * diff2
+            if diff1 < diff2:
+                users[j], users[i] = users[i], users[j]
+                pass
+            pass
+        pass
+    return users
+
+def GetUsersForMF(cur, userData):
+    bestm = list(userData['main'][0])
+    uid = userData['main'][0][0]
+    l = ['', 'genrerating', 'agerating', 'maincast']
+    for i in range(len(bestm)):
+        bestm[i] = [bestm[i], i, l[i]]
+        pass
+    bestm.sort(key = MF_FilterKey1, reverse = True)
+    #print(bestm)
+    diff1 = math.ceil((bestm[0][0]/100) * 5)
+    diff2 = math.ceil((bestm[1][0]/100) * 5)
+    offset = random.randint(0, 990)
+    offset = 0
+    prefUsers = GetUsersForMF_Helper(cur, uid)
+    res1 = []
+    for u in prefUsers:
+        q = "SELECT * FROM maincategories WHERE userid = {};"
+        q = q.format(u)
+        cur.execute(q)
+        res1 += cur.fetchall()
+        pass
+    #print(res1)
+    res1 = CFUserSort(res1, userData['main'][0][bestm[0][1]] + userData['main'][0][bestm[1][1]])
+    #print(res1)
+    res = []
+    for i in range(len(res1)):
+        if len(res) != 0 and len(res) % 5 == 0:
+            break
+        if res1[i][0] not in res:
+            res.append(res1[i][0])
+            pass
+        pass
+    #print(res)
+    return res
+
+def GetUsersForMF_Helper(cur, uid):
+    watchedL = GetUserRecentWatchedList(cur, uid, 10)
+    userids = []
+    for m in watchedL:
+        q = "select * from watched where title = '{}';"
+        cur.execute(q.format(m[2]))
+        r = cur.fetchall()
+        for i in range(1, len(r)):
+            if r[i][1] not in userids:
+                userids.append(r[i][1])
+                pass
+            pass
+        pass
+    return userids
+
+def WriteToDB(conn, cur, uid, data, col):
+    s = ""
+    for m in range(len(data)):
+        s += str(data[m])
+        if m != len(data) - 1:
+            s += "||"
+            pass
+        pass
+    s = s.replace(" ", '')
+    #print(s)
+    q = "select * from rekomovies where userid = {};"
+    q = q.format(uid)
+    cur.execute(q)
+    r = cur.fetchall()
+    print()
+    if len(r) == 0:
+        q = 'insert into rekomovies(userid, {}) values({}, "{}");'
+        q = q.format(col, uid, s)
+    else:
+        q = 'update rekomovies set {}="{}" where userid={};'
+        q = q.format(col, s, uid)
+        pass
+    print(q)
+    cur.execute(q)
+    conn.commit()
+    return 0

@@ -1,6 +1,8 @@
 import RekoBase
 import datetime
 import decimal
+import math
+import numpy
 
 def FilterKey(data):
     return data['m']
@@ -8,20 +10,17 @@ def FilterKey(data):
 def ContentFiltering(dbuser, dbpass, uid):
     conn, cur = RekoBase.ConnectToDatabase(dbuser, dbpass)
     userData = RekoBase.GetUserProfileData(cur, uid)
-    print(userData)
+    #print(userData)
     targetYears = RekoBase.GetWatchedYears(cur, uid)
-    print(targetYears)
+    #print(targetYears)
     movies = RekoBase.GetTitlesForCF(cur, targetYears)
     scores = []
     for m in movies:
         data = RekoBase.GetTitleData(cur, m)
-        print(data)
-        data = RekoBase.CreateFilterData(data)
         #print(data)
+        data = RekoBase.CreateFilterData(data)
         genreInfo = RekoBase.LookupGenre(cur, data['g'])
-        #print(genreInfo)
         ratingInfo = RekoBase.LookupAgeRatings(cur, data['a'])
-        #print(ratingInfo)
         gscore = decimal.Decimal(0)
         cscore = decimal.Decimal(0)
         ascore = decimal.Decimal(0)
@@ -34,23 +33,16 @@ def ContentFiltering(dbuser, dbpass, uid):
                 cscore += c[3]
                 pass
             pass
-        #print("genre score:", gscore)
-        #print("rating score:", ascore)
-        #print("cast score:", cscore)
         genreT, ratingT, castT, catT = RekoBase.GetTotalUserScores(userData)
-        #print("gt = %s | rt = %s | ct = %s" % (genreT, ratingT, castT))
         if castT != 0 and cscore != 0:
             gscore = (gscore / genreT) * 100
             pass
-        #print("genre perc:", gscore)
         if castT != 0 and cscore != 0:
             ascore = (ascore / ratingT) * 100
             pass
-        #print("rating perc:", ascore)
         if castT != 0 and cscore != 0:
             cscore = (cscore / castT) * 100
             pass
-        #print("cast perc:", cscore)
 
         # calculating total rating value
         sum_ = 0
@@ -68,32 +60,30 @@ def ContentFiltering(dbuser, dbpass, uid):
             totalScore = round((sum_/catT) * 100, 2)
             pass
         #print("perc:", totalScore)
-        scores.append({'m':totalScore, 'g':gscore, 'a':ascore, 'c':cscore, 't':m})
+        scores.append({'m':str(totalScore), 'g':str(gscore), 'a':str(ascore), 'c':str(cscore), 't':str(m)})
         pass
     # sorting and choosing the top 10 to recommend
     scores.sort(key = FilterKey, reverse = True)
     rekos = scores[0:10]
-    print(rekos)
+    #print(rekos)
+    RekoBase.WriteToDB(conn, cur, uid, rekos, 'cf1')
     RekoBase.CloseDatabase(conn)
     return 0
 
 def ContentFilteringScore(dbuser, dbpass, uid):
     conn, cur = RekoBase.ConnectToDatabase(dbuser, dbpass)
     userData = RekoBase.GetUserProfileData(cur, uid)
-    print(userData)
+    #print(userData)
     targetYears = RekoBase.GetWatchedYears(cur, uid)
-    print(targetYears)
+    #print(targetYears)
     movies = RekoBase.GetTitlesForCF(cur, targetYears)
     scores = []
     for m in movies:
         data = RekoBase.GetTitleData(cur, m)
-        print(data)
-        data = RekoBase.CreateFilterData(data)
         #print(data)
+        data = RekoBase.CreateFilterData(data)
         genreInfo = RekoBase.LookupGenre(cur, data['g'])
-        #print(genreInfo)
         ratingInfo = RekoBase.LookupAgeRatings(cur, data['a'])
-        #print(ratingInfo)
         gscore = decimal.Decimal(0)
         cscore = decimal.Decimal(0)
         ascore = decimal.Decimal(0)
@@ -107,12 +97,13 @@ def ContentFilteringScore(dbuser, dbpass, uid):
                 pass
             pass
         totalScore = gscore + cscore + ascore
-        scores.append({'m':totalScore, 'g':gscore, 'a':ascore, 'c':cscore, 't':m})
+        scores.append({'m':str(totalScore), 'g':str(gscore), 'a':str(ascore), 'c':str(cscore), 't':str(m)})
         pass
     # sorting and choosing the top 10 to recommend
     scores.sort(key = FilterKey, reverse = True)
     rekos = scores[0:10]
-    print(rekos)
+    #print(rekos)
+    RekoBase.WriteToDB(conn, cur, uid, rekos, 'cf2')
     RekoBase.CloseDatabase(conn)
     return 0
 
@@ -131,8 +122,41 @@ def CollaborativeSimple(dbuser, dbpass, uid):
     scores.sort(reverse = True)
     scoreL = []
     for s in scores:
-        scoreL.append({'m':s, 't':movies[m]})
+        scoreL.append({'m':str(s), 't':movies[m]})
         pass
     rekos = scoreL[0:10]
-    print(rekos)
+    #print(rekos)
+    RekoBase.WriteToDB(conn, cur, uid, rekos, 'mf1')
+    RekoBase.CloseDatabase(conn)
+    return 0
+
+def CollaborativeMF(dbuser, dbpass, uid):
+    conn, cur = RekoBase.ConnectToDatabase(dbuser, dbpass)
+    userData = RekoBase.GetUserProfileData(cur, uid)
+    users = RekoBase.GetUsersForMF(cur, userData)
+    users.append(uid)
+    table, movies = RekoBase.GenerateCF_Table(cur, users, 5)
+    scores = [0] * (len(movies) - 5)
+    for u in range(len(users) - 1):
+        for m in range(5):
+            index = (u*5)+m
+            refData = RekoBase.GetUserProfileData(cur, users[u])
+            rating = table[u][index]
+            avg1 = refData['score'][0]/refData['score'][1]
+            avg2 = userData['score'][0]/userData['score'][1]
+            sd = math.floor(numpy.std([avg1, avg2]))
+            rating -= sd
+            scores[index] = [rating, movies[index]]
+            pass
+        pass
+    #print(scores)
+    scores.sort(reverse = True)
+    scoreL = []
+    for s in scores:
+        scoreL.append({'m':str(s[0]), 't':movies[m]})
+        pass
+    rekos = scoreL[0:10]
+    #print(rekos)
+    RekoBase.WriteToDB(conn, cur, uid, rekos, 'mf2')
+    RekoBase.CloseDatabase(conn)
     return 0
