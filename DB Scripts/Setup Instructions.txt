@@ -93,3 +93,15 @@ The following command line will execute the script:-
 *Note: where '<>' is specified, specific information is required.
 **Note: the genre index parameter is hard-coded to target the last column - adjust if necessary
 **Note: the script also has a target database hard-coded, oops - adjust if necessary
+
+******************************************************************
+
+******************** Creating fake users *************************
+
+******************************************************************
+
+In addition to this setup, it is required to adjust the ratings column of the database to meet the metadata criteria for this project.
+Running the following command line should resolve the issue:-
+	python ratingsAdjustment.py
+
+*Note: this script uses hard-coded values - adjust if necessary
