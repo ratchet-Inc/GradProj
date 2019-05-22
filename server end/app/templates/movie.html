@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block css %} 
+
+<style>
+body{
+  background-image: url("https://i.pinimg.com/564x/ad/ec/34/adec3418719cece6d41cf9f600a24550.jpg");
+}
+
+.carde{
+  margin-bottom: 3rem;
+  display: inline-block;
+  /*width: 40rem;*/*/
+  position: relative;
+  /*right: 5rem;*/
+  background-color:#342f35;
+  border-radius: 5px;
+}
+
+.card-img{
+  display: inline-block;
+}
+
+.content{
+  display: inline-block;
+}
+
+.detlab {
+    font-family: serif;
+    font-style: italic;
+    color: #b044ea;
+    margin-bottom: 4rem;
+}
+
+</style>
+
+{% endblock%}
+
+{% block main %}
+
+<div class="row">
+  <div class="col-md-6">
+    <img src="{{ imgurl }}" class="card-img" alt="...">
+  </div>
+  <div class="carde col-md-6">
+       <div class="content">
+          <h2 class="detlab" style="font-size: 45px;">{{themovie[3]}} ({{themovie[5]}})</h2>
+          <h2 class="detlab">Duration: {{themovie[7]}}min</h2>
+          <h2 class="detlab">Genre: {{themovie[8]}}</h2>
+          <h2 class="detlab" id="age">This movie is rated {{themovie[4]}}</h2>
+          <script>
+            var y=document.getElementById("age");
+            if ({{ themovie[4] }} == 0){
+              y.innerHTML= "This movie is rated for All Ages";
+            }
+            else{
+              y.innerHTML= "This movie is rated for Adults";
+            }
+          </script>
+          <div class="row">
+              <form action="/movie/{{title}}" method="get" role="form">
+                  <div class="form-group col-sm-10">
+                      
+                      <select id="feedback" name="feedback" class="selectpicker form-control" onchange="">
+                          <option value="">Please rate movie based on how much you enjoyed it...</option>
+                          <option value="1">1- Boring</option>
+                          <option value="2">2- Meh</option>
+                          <option value="3">3- Satifactory</option>
+                          <option value="4">4- Entertaining</option>
+                          <option value="5">5- Amazing!</option>
+                      </select>
+                      <br />
+                      <div class="col-auto">
+                          <button class="btn btn-md btn-success" type="submit">Submit</button>
+                      </div>
+                  </div>
+              </form>
+          </div>
+       </div>
+  </div>
+</div>
+
+
+
+<!--     <div class="card-body">-->
+<!--         <h5 class="card-title">Movie title {{ i }}</h5>-->
+<!--     <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>-->
+<!--     <a href="#" class="btn btn-primary">Details</a>-->
+<!-- </div>-->
+<!--</div>        -->
+
+
+{% endblock %}

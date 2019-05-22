@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block css %} 
+
+<style>
+.panel-login {
+    border-color: #ccc;
+     background-color: #f9f8f8;
+    -webkit-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    -moz-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    padding:20px;
+    margin-top:30px;
+    border-radius: 5px;
+}
+.panel-login>.panel-heading {
+    text-align:center;
+}   
+
+.btn-login {
+    background-color:#3D9DB3;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+    height: auto;
+    font-weight: normal;
+    padding: 14px 0;
+    text-transform: uppercase;
+    border-color: #2d92a9;
+    text-align:center;
+}
+
+.fullscreen_bg {
+    /*position: fixed;*/
+    /*top: 56px;*/
+    /*right: 0;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*background-size: cover;*/
+    /*background-position: 50% 50%;*/
+    background-size: 100% 100%;
+    background-image: url('http://wallpapercave.com/wp/COd7Fkd.jpg');
+    background-repeat:repeat;
+}
+
+#zodiacimg{
+  height:7rem;
+  width:7rem;
+}
+
+</style>
+
+{% endblock%}
+
+
+
+{% block main %}
+
+<div id="fullscreen_bg" class="fullscreen_bg"/>
+<div id="regContainer" class="container">
+  {% include 'flash_messages.html' %}
+      <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="panel panel-login">
+          <div class="panel-heading" style="float: none; margin: 0 auto;">
+                <h3>Signup</h3>
+            <hr>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-lg-12">
+                <form id="login-form" method="post" action="{{ url_for('signup') }}" role="form" style="display: block;">
+                {{ signupform.csrf_token }}
+                   <div class="form-group">
+                    <label for="firstname">First Name</label>
+                    <input type="text" name="firstname" id="firstname" tabindex="1" class="form-control" placeholder="First Name" value="">
+                  </div>
+                   <div class="form-group">
+                    <label for="lastname">Last Name</label>
+                    <input type="text" name="lastname" id="lastname" tabindex="1" class="form-control" placeholder="Last Name" value="">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
+                  </div>
+                  
+                  <div class="row">
+                    
+                      <p>When deciding what movie to watch, which feature is most important to you? Please rate each factor on a scale factor on a scale of one to 10</p>
+                    <div class="form-group col-sm-3">
+                      <label for="genre_rate">Genre</label>
+                      <input type="number" name="genre_rate" min="1" max="10">
+                    </div>
+                    <div class="form-group col-sm-3">
+                      <label for="cast_rate">Cast</label>
+                      <input type="number" name="cast_rate" min="1" max="10">
+                    </div>
+                    <div class="form-group col-sm-3">
+                      <label for="age_rate">Age</label>
+                      <input type="number" name="age_rate" min="1" max="10">
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="form-group col-sm-9">
+                      <label for="genre1">Genre 1</label>
+                      <select id="genre1" name="genre1" class="selectpicker form-control">
+                        <option value="">Select your preferred genre...</option>
+                        <option value=1>action</option>
+                        <option value=2>adventure</option>
+                        <option value=3>drama</option>
+                        <option value=4>musical</option>
+                        <option value=5>horror</option>
+                        <option value=6>thriller</option>
+                        <option value=7>romance</option>
+                        <option value=8>animation</option>
+                        <option value=9>comedy</option>
+                        <option value=10>sci-fi</option>
+                        <option value=11>documentary</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="form-group col-sm-9">
+                      <label for="genre2">Genre 2</label>
+                      <select id="genre2" name="genre2" class="selectpicker form-control">
+                        <option value="">Select your preferred genre...</option>
+                        <option value=1>action</option>
+                        <option value=2>adventure</option>
+                        <option value=3>drama</option>
+                        <option value=4>musical</option>
+                        <option value=5>horror</option>
+                        <option value=6>thriller</option>
+                        <option value=7>romance</option>
+                        <option value=8>animation</option>
+                        <option value=9>comedy</option>
+                        <option value=10>sci-fi</option>
+                        <option value=11>documentary</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="form-group col-sm-9">
+                      <label for="profpic">Profile Picture</label>
+                      <select id="profpic" name="profpic" class="selectpicker form-control" onchange="myFunction()">
+                        <option value="">Select Zodiac for profile...</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zrat-01.png">Rat</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zdragon-01.png">Dragon</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zsnake-01.png">Snake</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/ztiger-01.png">Tiger</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zhen-01.png">Rooster</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zgoat-01.png">Goat</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zmonkey-01.png">Monkey</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/128/zcow-01-01.png">Ox</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zhorse-01.png">Horse</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zrabbit-01.png">Rabbit</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/zpig-01.png">Pig</option>
+                        <option value="https://cdn3.iconfinder.com/data/icons/ching-zodiac/128/zdog-01.png">Dog</option>
+                      </select>
+                    </div>
+                    <div class="col-sm-3">  
+                      <img id="zodiacimg" src="https://image.shutterstock.com/image-illustration/question-icon-primitive-set-this-260nw-319684793.jpg">
+                    </div>
+                  </div>
+                  
+
+
+                  <script>
+                    function myFunction() {
+                      var y=document.getElementById("zodiacimg");
+                      var x = document.getElementById("profpic").value;
+                      if (x == ""){
+                        y.setAttribute("src", "https://image.shutterstock.com/image-illustration/question-icon-primitive-set-this-260nw-319684793.jpg");
+                      }
+                      else{
+                        y.setAttribute("src", x);
+                      }
+                      
+                      /*
+                      if (x=="cow"){
+                        y.setAttribute("src", "https://cdn3.iconfinder.com/data/icons/ching-zodiac/128/zcow-01-01.png");
+                      }
+                      else if (x=="dog"){
+                        y.setAttribute("src", "https://cdn3.iconfinder.com/data/icons/ching-zodiac/128/zdog-01.png");
+                      }
+                      else{
+                        y.setAttribute("src", "https://cdn3.iconfinder.com/data/icons/ching-zodiac/2118/z" + x + "-01.png");
+                      }
+                    */
+                    }
+                  </script>
+                  
+                  <div class="form-group">
+                      <div id="login" class="col-sm-6">
+                        <input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-login" value="Signup">
+                      </div>
+                  </div>
+                  <div>
+                      <p>Already have an account? Then just<a href="{{url_for('login')}}"> Login here!</a></p>
+                  </div>
+                 </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

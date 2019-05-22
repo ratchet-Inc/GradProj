@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block css %} 
+
+<style>
+  body{
+      background-image: url("https://i.pinimg.com/564x/ad/ec/34/adec3418719cece6d41cf9f600a24550.jpg");
+  }
+  
+  .card{
+      margin-bottom: 3rem;
+      height:35rem;
+      width: 18rem;
+  }
+  
+  .card-img-top{
+      height: 18rem;
+      width: 18rem;
+  }
+  
+</style>
+
+{% endblock%}
+
+{% block main %}
+
+
+<div class="row">
+  {% for i in movie %}
+  <div class="col-md-4">
+    <div class="card">
+         <img src="https://m.media-amazon.com/images/M/MV5BMjMxNjY2MDU1OV5BMl5BanBnXkFtZTgwNzY1MTUwNTM@._V1_SY1000_CR0,0,674,1000_AL_.jpg" class="card-img-top" alt="...">
+         <div class="card-body">
+             <h5 class="card-title">Movie title {{ i[2] }}</h5>
+             <p>Rating: {{ i[12]/2 }}</p>
+             <p class="card-text"></p>
+             <a href="/movie/{{ i[11] }}" class="btn btn-primary">Details</a>
+         </div>
+    </div>
+  </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

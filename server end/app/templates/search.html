@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block css %} 
+
+<style>
+
+body{
+  background-image: url("https://i.pinimg.com/564x/ad/ec/34/adec3418719cece6d41cf9f600a24550.jpg");
+}
+.form-control-borderless {
+    border: none;
+}
+
+.form-control-borderless:hover, .form-control-borderless:active, .form-control-borderless:focus {
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+#moviesblk>img{
+    height: 300px;
+    width: 200px;
+    padding:5px;
+}
+
+#moviesblk:hover {
+    transform: scale(1.2, 1.2);
+    /*box-shadow: 5px 5px 30px 15px rgba(0,0,0,0.25), -5px -5px 30px 15px rgba(0,0,0,0.22);*/
+    transition: 0.4s;
+}
+  
+  
+.hovtext{
+      /*position: relative;*/
+      /*display: none;*/
+      transition: .5s ease;
+      opacity: 0;
+      position: absolute;
+      top: 10%;
+      /*transform: translate(-50%, -50%);*/
+      /*-ms-transform: translate(-50%, -50%);*/
+      
+  }
+  
+.hovtext>p{
+  color:white;
+  position:relative;
+  /*left:120px;*/
+  /*top: 80px;*/
+}
+
+#moviesblk:hover .card_image {
+  opacity: 0.3;
+  position: absolute;
+}
+
+#moviesblk:hover .hovtext {
+  opacity: 1;
+}
+
+#searchcon{
+  margin-bottom: 3rem;
+}
+</style>
+
+{% endblock%}
+
+
+{% block main %}
+
+
+<div class="row justify-content-center" id="searchcon">
+    <div class="col-12 col-md-10 col-lg-8">
+        <form class="card card-sm" action="{{ url_for('Search') }}" method="get" role="form">
+            <div class="card-body row no-gutters align-items-center">
+                <div class="col-auto">
+                    <i class="fas fa-search h4 text-body"></i>
+                </div>
+                <!--end of col-->
+                <div class="col">
+                    <input class="form-control form-control-md form-control-borderless" id="search" name='search' name="search" type="search" placeholder="Search topics or keywords">
+                </div>
+                <!--end of col-->
+                <div class="col-auto">
+                    <button class="btn btn-md btn-success" type="submit" >Search</button>
+                </div>
+                <!--end of col-->
+            </div>
+        </form>
+    </div>
+<!--end of col-->
+</div>
+{% for j in range(3) %}
+<div class="row">
+    {% for i in range(4) %}
+    {% if (j*5+i) < len %}
+    <!-- <a href="/movie/{{ movieL[j*5+i][0] }}"> -->
+    <div class="col-md-3" id="moviesblk">
+        <!-- <a href="/movie/{{ movieL[j*5+i][0] }}"> -->
+        <img src="{{movieL[j*5+i][9]}}" alt="..." class="card_image">
+        <!-- </a> -->
+        <a href="/movie/{{ movieL[j*5+i][0] }}">
+            <div class="hovtext">
+                <p>{{ movieL[j*5+i][3] }} ({{ movieL[j*5+i][5] }})</p><br />
+                <p>{{ movieL[j*5+i][8] }}</p><br />
+                <p>{{ movieL[j*5+i][4] }}</p>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    <!-- </a> -->
+    {% endfor %}
+</div>
+
+{% endfor %}
+
+<!--
+<div class="container">
+    <div class="row">
+    {% for i in range(50) %}
+        <div class="col-md-3">
+            <div class="cards">
+                 <img src="https://m.media-amazon.com/images/M/MV5BMjMxNjY2MDU1OV5BMl5BanBnXkFtZTgwNzY1MTUwNTM@._V1_SY1000_CR0,0,674,1000_AL_.jpg"alt="..." class="card_image">
+             </div>
+            </div>        
+    {% endfor %}
+    </div>
+</div>
+-->
+
+{% endblock %}

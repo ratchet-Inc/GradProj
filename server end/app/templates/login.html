@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block css %} 
+
+<style>
+.panel-login {
+    border-color: #ccc;
+     background-color: #f9f8f8;
+    -webkit-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    -moz-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    padding:20px;
+    margin-top:30px;
+    border-radius: 5px;
+}
+.panel-login>.panel-heading {
+    text-align:center;
+}   
+
+.btn-login {
+    background-color:#3D9DB3;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+    height: auto;
+    font-weight: normal;
+    padding: 14px 0;
+    text-transform: uppercase;
+    border-color: #2d92a9;
+    text-align:center;
+}
+
+.fullscreen_bg {
+    position: fixed;
+    top: 56px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-image: url('https://wallpapercave.com/wp/XiM1vpr.jpg');
+    background-repeat:repeat;
+  }
+</style>
+
+{% endblock%}
+
+
+
+{% block main %}
+
+<div id="fullscreen_bg" class="fullscreen_bg"/>
+<div id="regContainer" class="container">
+  {% include 'flash_messages.html' %}
+      <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="panel panel-login">
+          <div class="panel-heading" style="float: none; margin: 0 auto;">
+                <h3>Login</h3>
+            <hr>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-lg-12">
+                <form id="login-form" method="post" role="form" action="{{ url_for('login') }}" style="display: block;">
+                {{ loginform.csrf_token }}
+                  <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
+                  </div>
+                  <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
+                  </div>
+                  <div class="form-group text-center">
+                    <input type="checkbox" tabindex="3" class="" name="remember" id="remember">
+                    <label for="remember"> Remember Me</label>
+                  </div>
+                  <div class="form-group">
+                      <div id="login" class="col-sm-6">
+                        <input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-login" value="Log In">
+                      </div>
+                  </div>
+                  <div>
+                      <p>Don't have an account yet? <a href="{{url_for('signup')}}">Signup here!</a></p>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

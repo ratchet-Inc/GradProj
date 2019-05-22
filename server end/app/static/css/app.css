@@ -1,0 +1,24 @@
+body{
+    padding-top: 5rem;
+}
+
+.nav-link, .navbar-brand{
+    color: #b044ea;
+    font-weight: bold;
+    margin-right: 40px;
+    font-size: 25px;
+}
+
+.nav-link:hover{
+    color: white;
+    background-color: #b044ea;
+}
+
+.navbar{
+    background-color: black;
+}
+
+#navimg{
+  height:7rem; 
+  width:7rem;
+}

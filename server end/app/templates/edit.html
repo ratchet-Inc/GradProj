@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block css %} 
+
+<style>
+.panel-login {
+    border-color: #ccc;
+     background-color: #f9f8f8;
+    -webkit-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    -moz-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+    padding:20px;
+    margin-top:30px;
+    border-radius: 5px;
+}
+.panel-login>.panel-heading {
+    text-align:center;
+}   
+
+.btn-login {
+    background-color:#3D9DB3;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+    height: auto;
+    font-weight: normal;
+    padding: 14px 0;
+    text-transform: uppercase;
+    border-color: #2d92a9;
+    text-align:center;
+}
+
+body{
+      background-image: url("https://i.pinimg.com/564x/ad/ec/34/adec3418719cece6d41cf9f600a24550.jpg");
+}
+
+.proflabel, .profdata{
+    font-size: 30px;
+    display:inline-block;
+}
+
+.proflabel{
+    font-weight:bold;
+}
+
+.profdata{
+
+}
+
+.info{
+    margin: 40px;    
+}
+
+#zodiacimg{
+  height: 20rem;
+  width: 20rem;
+}
+
+</style>
+
+{% endblock%}
+
+
+
+{% block main %}
+
+
+<div class="panel panel-login">
+  <div class="panel-heading" style="float: none; margin: 0 auto;">
+        <h3>Account Details</h3>
+    <hr>
+  </div>
+  <div class="panel-body">
+      <p class="proflabel">Profile Picture</p>
+      <div class="col-sm-3">
+          <img id="zodiacimg" src="{{ user[0][5] }}">
+      </div>
+
+
+      <div class="info row">
+          <p class="proflabel col-md-3">First Name:</p>
+          <p class="profdata col-md-3">{{ user[0][1] }}</p>
+      </div>
+
+      <div class="info row">
+          <p class="proflabel col-md-3">Last Name:</p>
+          <p class="profdata col-md-3">{{ user[0][2] }}</p>
+      </div>
+
+      <div class="info row">
+          <p class="proflabel col-md-3">Username:</p>
+          <p class="profdata col-md-3">{{ user[0][4] }}</p>
+      </div>
+
+      <div class="info row">
+          <p class="proflabel col-md-3">Password:</p>
+          <p class="profdata col-md-3">**********</p>
+      </div>
+
+      <div class="info row">
+          <p class="proflabel col-md-3">Join Date:</p>
+          <p class="profdata col-md-3">{{ user[0][6] }}</p>
+      </div>
+
+     
+      <div class="info row">
+          <p class="proflabel col-md-3">Genre Meta:</p>
+          <p class="profdata col-md-3">{{info[1]}}</p>
+      </div>
+      <div class="info row">
+          <p class="proflabel col-md-3">Rating Meta:</p>
+          <p class="profdata col-md-3">{{info[2]}}</p>
+      </div>
+      <div class="info row">
+          <p class="proflabel col-md-3">Cast Meta:</p>
+          <p class="profdata col-md-3">{{info[3]}}</p>
+      </div>
+
+  </div>
+</div>
+
+
+{% endblock %}
