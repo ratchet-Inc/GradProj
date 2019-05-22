@@ -42,7 +42,7 @@ def main(args):
         pass
     elif 'add' == args['-reko'][0].strip():
         a = {'-crds':str(args['-crds'][0]+","+args['-crds'][1]), '-uid':args['-reko'][1].strip(), '-tid':args['-reko'][2].strip(), '-rtng':args['-reko'][3].strip()}
-        rekoSys.mainF(a)
+        result = rekoSys.mainF(a)
         pass
     return result
 

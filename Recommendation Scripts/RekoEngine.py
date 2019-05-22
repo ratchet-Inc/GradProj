@@ -122,7 +122,7 @@ def CollaborativeSimple(dbuser, dbpass, uid):
     scores.sort(reverse = True)
     scoreL = []
     for s in scores:
-        scoreL.append({'m':str(s), 't':movies[m]})
+        scoreL.append({'m':str(s), 't':movies[s[1]]})
         pass
     rekos = scoreL[0:10]
     #print(rekos)
@@ -153,7 +153,7 @@ def CollaborativeMF(dbuser, dbpass, uid):
     scores.sort(reverse = True)
     scoreL = []
     for s in scores:
-        scoreL.append({'m':str(s[0]), 't':movies[m]})
+        scoreL.append({'m':str(s[0]), 't':s[1]})
         pass
     rekos = scoreL[0:10]
     #print(rekos)
