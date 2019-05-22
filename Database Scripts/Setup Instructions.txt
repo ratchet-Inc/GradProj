@@ -1,0 +1,107 @@
+******************************************************************
+
+**************************** Overview ****************************
+
+******************************************************************
+
+The python scripts found in this directory are to be utilized for creating a usable and valid database (MySQL) for the recommendation system.
+
+
+Software and Tools that are required to complete the process:-
+
+Python 3 (v3.7 was used for windows OS | v3.5 was used for linux OS)
+MySQL (MySQL 8.0 is preferred for both OS)
+Active connection to internet
+
+
+******************************************************************
+
+*************** Sourcing the required data files *****************
+
+******************************************************************
+
+The data set that is required for the database construction can be sourced from: https://datasets.imdbws.com/
+
+Download and extract each file and assign unique names to each file. E.g:-
+
+data(basics).tsv | data(akas).tsv | data(names).tsv | data(ratings).tsv | data(crew).tsv | data(principals).tsv
+
+**Note the exclusion of the episodes file. The purpose of this project is to recommend movies and not TV shows.
+	All categories that are not movies are filtered during conversion of the basics file, which is used as the primary table within the database.
+
+
+******************************************************************
+
+***************** Converting the TSV files ***********************
+
+******************************************************************
+
+** Important notes about the converting process:-
+	The files are converted accoring the information at: https://www.imdb.com/interfaces/
+	Each TSV file is converted to a MySQL file according to the number of table columns within each TSV file.
+	Sansitization of each file is applied where appropriate for compliance with our project's algorithm design.
+	The conversion time of each file varies. The maximum time encountered during the creation of this project is 530 seconds, this was on a high end machine(2019).
+	It is more convenient to have all files and scripts within the same directory.
+
+The following are commands that must be ran to convert the tsv files to usable sql files for queries:-
+
+Generic command line format for conversion:
+
+	python TSVtoMySQL.py -tf <file to convert> -tn <name for the table> -cl <columns info> -of <name for the output> -db <database name> -ndb <flag for new database> -flt <filterLevel>, <refFileName>, <filterIndex>, <refCompIndex>, <compIndex>, <refTable>, <refColumn>
+
+*Note: for the -flt(filtering flag), the arrangement of the input information varies depending on the flag level
+
+
+Specific format for execution:
+
+python TSVtoMySQL.py -tf data(basics).tsv -tn titles -cl vc(64) nn pk, vc(64) nn, vc(512) nn, vc(512) nn, varchar(16) nn, int(2) nn, int(2) nn, int(2) nn, vc(128) nn -of COMP3901 -db moviesDB -ndb true -flt 1, movie, 0, 1
+python TSVtoMySQL.py -tf data(principals).tsv -tn principals -cl vc(64) nn fk, int(8) nn, vc(128) nn, vc(256) nn, vc(256) nn, vc(256) nn -of COMP3901 -db moviesDB -ndb false -flt 3, filtered(titles).txt, 2, 0, 0, titles, tconst
+python TSVtoMySQL.py -tf data(akas).tsv -tn titleDetails -cl vc(64) nn fk, int(32) nn, vc(384) nn, vc(128) nn, vc(32) nn, vc(128) nn, vc(64) nn, int(8) nn -of COMP3901 -db moviesDB -ndb false -flt 2, filtered(titles).txt, 0, 0, 0, titles, tconst
+python TSVtoMySQL.py -tf data(ratings).tsv -tn titleRatings -cl vc(64) nn pk, decimal(4.2) nn, int(2) nn -of COMP3901 -db moviesDB -ndb false -flt 2, filtered(titles).txt, 0, 0, 0
+python TSVtoMySQL.py -tf data(crew).tsv -tn titleCrew -cl vc(64) nn pk, vc(512) nn, vc(512) nn -of COMP3901 -db moviesDB -ndb false -flt 2, filtered(titles).txt, 0, 0, 0
+python TSVtoMySQL.py -tf data(names).tsv -tn crewNames -cl vc(64) nn pk, vc(64) nn, int(4) nn, int(4) nn, vc(256) nn, vc(512) nn -of COMP3901 -db moviesDB -ndb false -flt 2, filtered(principals).txt, 0, 2, 0
+
+
+******************************************************************
+
+******************* Creating the database ************************
+
+******************************************************************
+
+Following the queries above for conversions, it is time to construct the databse via running the MySQL scripts.
+Run the following command line instruction to execute the scripts that were created during the conversion process:
+
+mysql -u root -p<password:optional> < <filePath>/<fileName>(<fileName>).sql --silent
+
+* where '<>' is specified, specific target information is required
+* if the -ndb flag is set to true on any file during the conversion process, it is best to run that file first.
+
+**NOTE: scripts may take a long time to run, this varies by machine and by MySQL server configuration.
+
+
+******************************************************************
+
+******************** Creating fake users *************************
+
+******************************************************************
+
+Running the user faker script will create the necessary tables required for the recommendation analyses and a table of fake users for denomstration purposes.
+
+The following command line will execute the script:-
+	python userFakerScript.py -tf filtered(<filename>).txt, <genre column index> -of <filename> -usrs <number of users>
+
+*Note: where '<>' is specified, specific information is required.
+**Note: the genre index parameter is hard-coded to target the last column - adjust if necessary
+**Note: the script also has a target database hard-coded, oops - adjust if necessary
+
+******************************************************************
+
+******************** Creating fake users *************************
+
+******************************************************************
+
+In addition to this setup, it is required to adjust the ratings column of the database to meet the metadata criteria for this project.
+Running the following command line should resolve the issue:-
+	python ratingsAdjustment.py
+
+*Note: this script uses hard-coded values - adjust if necessary
